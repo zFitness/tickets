@@ -62,8 +62,8 @@ async function getProductInfo() {
                         if(form.value.fixTime) {
                             countDownVal.value = dayjs(form.value.fixTime).valueOf();
                         } else {
-            // 即将开抢
-    countDownVal.value = dayjs(result.itemBasicInfo.sellingStartTime).valueOf();
+                            // 即将开抢
+                            countDownVal.value = dayjs(result.itemBasicInfo.sellingStartTime).valueOf();
                         }
                     
                         isPreSell.value = true
@@ -310,7 +310,7 @@ async function countDownFinished() {
           <img class="img" :src="productInfo.itemBasicInfo.mainImageUrl" />
           <div>
             抢票时间：
-            {{ dayjs(countDownVal).format("YYYY-MM-DD HH:mm:ss") }}
+            {{ countDownVal?dayjs(countDownVal).format("YYYY-MM-DD HH:mm:ss"):'无需抢票' }}
           </div>
           <div>
             <a-countdown
