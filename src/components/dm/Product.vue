@@ -58,8 +58,14 @@ async function getProductInfo() {
                         Message.error(joinMsg([result.itemBuyBtn.btnText, result.itemBuyBtn.btnTips]))
                         return
                     } else if(result.itemBuyBtn.btnStatus === "106") {
-                        // 即将开抢
-                        countDownVal.value = dayjs(result.itemBasicInfo.sellingStartTime).valueOf();
+                        console.log(form.value)
+                        if(form.value.fixTime) {
+                            countDownVal.value = dayjs(form.value.fixTime).valueOf();
+                        } else {
+            // 即将开抢
+    countDownVal.value = dayjs(result.itemBasicInfo.sellingStartTime).valueOf();
+                        }
+                    
                         isPreSell.value = true
                         isShowCountDown.value = true;
                     }
@@ -296,192 +302,184 @@ async function countDownFinished() {
 </script>
 
 <template>
-    <section class="product-wrap">
-        <div class="subtitle">商品信息</div>
-        <div v-if="productInfo">
-            <div class="info-wrap" v-if="productInfo.itemBasicInfo">
-                <div class="left">
-                    <img
-                        class="img"
-                        :src="productInfo.itemBasicInfo.mainImageUrl"
-                    />
+  <section class="product-wrap">
+    <div class="subtitle">商品信息</div>
+    <div v-if="productInfo">
+      <div class="info-wrap" v-if="productInfo.itemBasicInfo">
+        <div class="left">
+          <img class="img" :src="productInfo.itemBasicInfo.mainImageUrl" />
+          <div>
+            抢票时间：
+            {{ dayjs(countDownVal).format("YYYY-MM-DD HH:mm:ss") }}
+          </div>
+          <div>
+            <a-countdown
+              v-if="isShowCountDown"
+              title="开售倒计时"
+              :value="countDownVal"
+              :now="Date.now()"
+              format="HH:mm:ss.SSS"
+              @finish="countDownFinished"
+            />
+          </div>
 
-                    <div>
-                        <a-countdown
-                            v-if="isShowCountDown"
-                            title="开售倒计时"
-                            :value="countDownVal"
-                            :now="Date.now()"
-                            format="HH:mm:ss.SSS"
-                            @finish="countDownFinished"
-                        />
-                    </div>
-
-                    <a-button
-                        v-if="isPreSell"
-                        style="margin-bottom: 10px"
-                        type="primary"
-                        status="success"
-                        @click="rob"
-                        :loading="isRob"
-                        :disabled="!activeSku"
-                        >抢票</a-button
-                    >
-                    <a-button
-                        v-else
-                        style="margin-bottom: 10px"
-                        type="primary"
-                        status="normal"
-                        @click="buy"
-                        :disabled="!activeSku"
-                        >购票</a-button
-                    >
-                </div>
-
-                <div class="right">
-                    <div class="column">
-                        <div>{{ productInfo.itemBasicInfo.cityName }}</div>
-                        <div>{{ productInfo.itemBasicInfo.venueName }}</div>
-                    </div>
-                    <div class="column">
-                        <div class="label">名称：</div>
-                        <div class="value">
-                            {{
-                                productInfo.itemBasicInfo.itemTitle ||
-                                productInfo.itemBasicInfo.projectTitle
-                            }}
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="label">itemId：</div>
-                        <div class="value">
-                            {{ productInfo.itemBasicInfo.itemId }}
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="label">价格：</div>
-                        <div class="value">
-                            {{ productInfo.itemBasicInfo.priceRange }}
-                        </div>
-                    </div>
-
-                    <div class="ticket-list">
-                        <div
-                            v-for="item in productInfo.performCalendar
-                                .performViews"
-                            class="ticket-item"
-                            @click="getSkuInfo(item)"
-                        >
-                            {{ item.performName }}
-                        </div>
-                    </div>
-
-                    <div class="sku-wrap">
-                        <div v-for="item in skuInfo" class="sku">
-                            <div
-                                class="sku-item"
-                                :class="{
-                                    'active-sku':
-                                        activeSku &&
-                                        activeSku.skuId === sku.skuId,
-                                }"
-                                v-for="sku in item.perform.skuList"
-                                @click="saveSku(sku)"
-                            >
-                                <div>{{ sku.priceName }}</div>
-                                <div>{{ sku.price }}</div>
-                                <div
-                                    class="tag"
-                                    v-if="
-                                        Array.isArray(sku.tags) &&
-                                        sku.tags.length
-                                    "
-                                >
-                                    <a-tag color="#f53f3f">{{
-                                        sku.tags[0].tagDesc
-                                    }}</a-tag>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          <a-button
+            v-if="isPreSell"
+            style="margin-bottom: 10px"
+            type="primary"
+            status="success"
+            @click="rob"
+            :loading="isRob"
+            :disabled="!activeSku"
+            >抢票</a-button
+          >
+          <a-button
+            v-else
+            style="margin-bottom: 10px"
+            type="primary"
+            status="normal"
+            @click="buy"
+            :disabled="!activeSku"
+            >购票</a-button
+          >
         </div>
-        <div v-else>请先获取商品信息</div>
-    </section>
+
+        <div class="right">
+          <div class="column">
+            <div>{{ productInfo.itemBasicInfo.cityName }}</div>
+            <div>{{ productInfo.itemBasicInfo.venueName }}</div>
+          </div>
+          <div class="column">
+            <div class="label">名称：</div>
+            <div class="value">
+              {{
+                productInfo.itemBasicInfo.itemTitle ||
+                productInfo.itemBasicInfo.projectTitle
+              }}
+            </div>
+          </div>
+          <div class="column">
+            <div class="label">itemId：</div>
+            <div class="value">
+              {{ productInfo.itemBasicInfo.itemId }}
+            </div>
+          </div>
+          <div class="column">
+            <div class="label">价格：</div>
+            <div class="value">
+              {{ productInfo.itemBasicInfo.priceRange }}
+            </div>
+          </div>
+
+          <div class="ticket-list">
+            <div
+              v-for="item in productInfo.performCalendar.performViews"
+              class="ticket-item"
+              @click="getSkuInfo(item)"
+            >
+              {{ item.performName }}
+            </div>
+          </div>
+
+          <div class="sku-wrap">
+            <div v-for="item in skuInfo" class="sku">
+              <div
+                class="sku-item"
+                :class="{
+                  'active-sku': activeSku && activeSku.skuId === sku.skuId,
+                }"
+                v-for="sku in item.perform.skuList"
+                @click="saveSku(sku)"
+              >
+                <div>{{ sku.priceName }}</div>
+                <div>{{ sku.price }}</div>
+                <div
+                  class="tag"
+                  v-if="Array.isArray(sku.tags) && sku.tags.length"
+                >
+                  <a-tag color="#f53f3f">{{ sku.tags[0].tagDesc }}</a-tag>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else>请先获取商品信息</div>
+  </section>
 </template>
 
 <style scoped lang="scss">
 .product-wrap {
-    padding: 20px;
+  padding: 20px;
 }
 .info-wrap {
-    display: flex;
-    flex-flow: row nowrap;
+  display: flex;
+  flex-flow: row nowrap;
 }
 .left {
-    margin-right: 20px;
-    .img {
-        width: 250px;
-        height: 350px;
-    }
+  margin-right: 20px;
+  .img {
+    width: 250px;
+    height: 350px;
+  }
 }
 .column {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: center;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
 
-    margin-bottom: 20px;
-    &:last-child {
-        margin-bottom: 0;
-    }
+  margin-bottom: 20px;
+  &:last-child {
+    margin-bottom: 0;
+  }
 
-    .label {
-        margin-right: 5px;
-        font-weight: 600;
-    }
+  .label {
+    margin-right: 5px;
+    font-weight: 600;
+  }
 }
 
 .subtitle {
-    font-size: 20px;
-    margin-bottom: 10px;
+  font-size: 20px;
+  margin-bottom: 10px;
 }
 
 .ticket-list {
-    display: flex;
-    flex-flow: row nowrap;
+  display: flex;
+  flex-flow: row nowrap;
 }
 .ticket-item {
-    border: 1px solid #ccc;
-    width: 200px;
-    padding: 20px 0;
-    margin-bottom: 10px;
-    margin-right: 30px;
+  border: 1px solid #ccc;
+  width: 200px;
+  padding: 20px 0;
+  margin-bottom: 10px;
+  margin-right: 30px;
 
-    text-align: center;
-    cursor: pointer;
-    &:hover {
-        background: #eee;
-    }
+  text-align: center;
+  cursor: pointer;
+  &:hover {
+    background: #eee;
+  }
 }
 
 .sku-wrap {
-    display: flex;
-    flex-flow: row wrap;
+  display: flex;
+  flex-flow: row wrap;
 
-    .sku-item {
-        border: 1px solid #ccc;
-        cursor: pointer;
-        padding: 20px 0;
-        margin-bottom: 10px;
-        text-align: center;
+  .sku-item {
+    border: 1px solid #ccc;
+    cursor: pointer;
+    padding: 20px 0;
+    margin-bottom: 10px;
+    text-align: center;
 
-        .tag {
-            color: #ff0000;
-        }
+    .tag {
+      color: #ff0000;
     }
-    .active-sku {
-        background: #eee;
-    }
+  }
+  .active-sku {
+    background: #eee;
+  }
 }
 </style>
